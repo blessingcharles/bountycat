@@ -153,7 +153,7 @@ if __name__ == "__main__":
         print("wordlist provided "+ wordlist)
         with open(wordlist,'r') as f:
             pass
-        scanner = Scanner(url,threads,timeout,fullpath,depth,hide_code,,wordlist)
+        scanner = Scanner(url,threads,timeout,fullpath,depth,hide_code,wordlist)
     else :
         scanner = Scanner(url,threads,timeout,fullpath,depth,hide_code,wordlist="Payloads/All.txt")
 
