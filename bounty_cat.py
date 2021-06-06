@@ -1,26 +1,28 @@
 from urllib.request import urlparse
 import argparse
-import time
-
 
 from templates.banner import banner , print_line
 from templates.headers import headers
 from templates.colors import *
 from templates.create_directory import dir_create
 from templates.requester import requester
+import templates.HandleSignals
 
 from Addons.screen_capture import Screenshots
 
+from vuln_scanner.First_Strike import FirstStrike
+from vuln_scanner.Ping import Ping_the_host
 from vuln_scanner.brute_directories import Brute
 from vuln_scanner.dns_records import SPF
 from vuln_scanner.linksscrapper import get_all_url_waybackmachine , get_all_tag_links , get_all_urls_with_params
 from vuln_scanner.Subdomain_enum import Sub_Enum
-import os
+from vuln_scanner.Open_redirect import get_all_urls_with_redirection
+
 
 
 class Scanner:
 
-    def __init__(self,url,threads,timeout,output_file_path,depth,hide_code,wordlist,ctf=False):
+    def __init__(self,url,port,threads,timeout,output_file_path,depth,hide_code,wordlist,ctf=False):
 
         self.url = url
         self.threads = threads
@@ -36,11 +38,20 @@ class Scanner:
         self.anchor_path = f"{self.fullpath}/anchor_links.txt"
         self.script_path = f"{self.fullpath}/script_links.txt"
         self.subdomain_path = f"{self.fullpath}/subdomains.txt"
+        self.scrapped_wordlist = f"{self.fullpath}/scrapped_wordlist_from_mainwebpage.txt"
 
     def start(self):
 
-        #domain vuln checking
+        #pinging
+        Ping_the_host(self.domain)
+        print_line(blue,reset)
 
+        #inital Strike
+        scrap = FirstStrike(self.url)
+        scrap.scrap(self.scrapped_wordlist)
+        print_line(green,reset)
+
+        #domain vuln checking
         SPF(self.domain)
         print_line(green,reset)
 
@@ -52,6 +63,16 @@ class Scanner:
         subd.iterate_through_wildcards()
         print_line(green,reset)
         
+        #Sensitive files
+        print(f'{blue} SENSITIVE FILES ENUMERATION {reset}')
+        scrap = FirstStrike("")
+        with open(self.subdomain_path,'r') as domains:
+            for domain in domains:
+                #print(domain)
+                scrap.Site_lookup(f"https://{domain.strip()}")
+
+        print_line(green,reset)
+
         #url scrapping
 
         print(f'{blue} URL SCRAPPING {reset}')
@@ -68,10 +89,17 @@ class Scanner:
         get_all_urls_with_params(f'{self.fullpath}/waybackurls.txt',self.fullpath)
 
         print_line(green,reset)
+
         #taking screenshots
         print(f"{blue}SCREEN SHOTTING ALL SUBDOMAINS{reset}")
         self.Screen_shot()
         print_line(green,reset)
+
+
+        #checking for possible open redirection
+        get_all_urls_with_redirection('Bounty/params_urls.txt','Bounty/redirect_params.txt','Payloads/redirects_params.txt')
+        print_line(green,reset)
+
 
         #finding sub directories in the domains
         print(f"{blue}BRUTEFORCING DIRECTORIES IN SUBDOMAIN{reset}")
@@ -108,6 +136,8 @@ class Scanner:
         except:
             pass
 
+
+
 if __name__ == "__main__":
 
     print_line(red,reset)
@@ -124,9 +154,10 @@ if __name__ == "__main__":
     parser.add_argument("-o","--output",dest="output",help="enter the directory name to store the outputs",default="Bounty")
     parser.add_argument("-cp","--change-ip",dest="ip_proxy",help="change ip to get rid of ip blocks [may get some false negatives]",default=False)
     parser.add_argument("-d","--depth",dest="depth",help="depth to scrap [default 5] otherwise it may loop forever",default=5,type=int)
-    parser.add_argument("-ctf","--capture-the-flag",dest='ctf',default=False,type=bool,help="set this flag to scan for ctf games")
+    parser.add_argument("-ctf",help="set this flag to scan for ctf games",action="store_true")
     parser.add_argument("-w","--wordlist",dest="wordlist",help="default set to jshaddix all.txt")
     parser.add_argument("-hc","--hide-code",dest="hide_code",help="enter the response codes comma separated to hide while bruteforcing")
+    parser.add_argument("--port",type=int,default=443,dest="port",help="set -port 80 for http website [default https port 443]")
     parser = parser.parse_args()
     
     url = parser.url
@@ -140,6 +171,7 @@ if __name__ == "__main__":
     depth = parser.depth
     ctf = parser.ctf
     wordlist = parser.wordlist
+    port = parser.port
     hide_code = parser.hide_code
 
     if  not url and not urls_file:
@@ -150,11 +182,21 @@ if __name__ == "__main__":
     fullpath = dir_create(output_file)
 
     if wordlist:
+
         print("wordlist provided "+ wordlist)
-        with open(wordlist,'r') as f:
-            pass
-        scanner = Scanner(url,threads,timeout,fullpath,depth,hide_code,wordlist)
+
+        try:
+            with open(wordlist,'r') as f:
+                pass
+
+            scanner = Scanner(url,port,threads,timeout,fullpath,depth,hide_code,wordlist)
+
+        except:
+            print("failed to open wordlist")
+            exit()
+
+
     else :
-        scanner = Scanner(url,threads,timeout,fullpath,depth,hide_code,wordlist="Payloads/All.txt")
+        scanner = Scanner(url,port,threads,timeout,fullpath,depth,hide_code,wordlist="Payloads/All.txt")
 
     scanner.start()

@@ -98,9 +98,23 @@ def get_all_urls_with_params(search_file_path,params_path_name):
     print(f"SCRAPPED URLS WITH PARAMS PRINTED TO ------> {params_path_name}/params_urls.txt ")
 
 
+def get_all_urls_with_redirection(search_file_path,params_path_name,path_payloads):
+
+        redir_params_url = []
+        payloads = []
+
+        with open(path_payloads,'r') as fd2:
+            for payload in fd2:
+                payloads.append(payload.strip())
+
+        with open(search_file_path,'r') as fd1:        
+            redir_params_url = [url for url in fd1 for payload in payloads if payload in url]
 
             
+        with open(params_path_name,'a') as fd1:
             
+            for url in redir_params_url:
+                fd1.write(url)
          
 
 

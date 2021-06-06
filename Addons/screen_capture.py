@@ -13,6 +13,7 @@ class Screenshots:
         }
 
         self.file_path = file_path
+        self.driver.set_page_load_timeout(3)
        
     def capture(self,domain):
 

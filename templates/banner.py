@@ -17,7 +17,7 @@ def banner(blue,reset):
 
 
 def print_line(green,reset):
-    print(green)
+    print(green,end="")
     print("-"*100)
-    print(reset)
+    print(reset,end="")
 

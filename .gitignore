@@ -1,0 +1,6 @@
+Bounty/
+*.pyc
+*/__pycache__/
+__pycache__
+test.py
+geckodriver*
