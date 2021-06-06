@@ -3,7 +3,6 @@ from templates.requester import requester
 from templates.soup import soupObject
 from templates.colors import *
 from concurrent.futures import ThreadPoolExecutor
-import requests
 
 class FirstStrike :
 
