@@ -22,7 +22,7 @@ from vuln_scanner.Open_redirect import get_all_urls_with_redirection
 
 class Scanner:
 
-    def __init__(self,url,port,threads,timeout,output_file_path,depth,hide_code,wordlist,ctf=False):
+    def __init__(self,url,port,threads,timeout,output_file_path,depth,hide_code,wordlist,ctf=False,verbose=False):
 
         self.url = url
         self.threads = threads
@@ -33,6 +33,10 @@ class Scanner:
         self.ctf = ctf
         self.wordlist = wordlist
         self.hide_code = hide_code
+        self.port = port
+        self.verbose = verbose
+
+        #storing the results path
 
         self.waybackurl = f"{self.fullpath}/waybackurls.txt"
         self.anchor_path = f"{self.fullpath}/anchor_links.txt"
@@ -47,7 +51,7 @@ class Scanner:
         print_line(blue,reset)
 
         #inital Strike
-        scrap = FirstStrike(self.url)
+        scrap = FirstStrike(self.url , self.timeout,self.hide_code)
         scrap.scrap(self.scrapped_wordlist)
         print_line(green,reset)
 
@@ -65,7 +69,7 @@ class Scanner:
         
         #Sensitive files
         print(f'{blue} SENSITIVE FILES ENUMERATION {reset}')
-        scrap = FirstStrike("")
+        scrap = FirstStrike("",self.timeout,self.hide_code,self.verbose)
         with open(self.subdomain_path,'r') as domains:
             for domain in domains:
                 #print(domain)
@@ -128,8 +132,10 @@ class Scanner:
             with open(self.subdomain_path,'r') as domains:
                 for domain in domains:
                     domain = domain.strip()
-                    r = requester(f"https://{domain}",time=10)
-                    if r.status_code < 400:
+                    r = requester(f"https://{domain}",time=self.timeout)
+
+                    if r.status_code in self.hide_code: pass
+                    elif r.status_code < 400:
                         print(f"BRUTEFORCING DIRECTORIES IN {domain}")
                         Brute(domain,"Bounty",self.wordlist).dir_brute()
 

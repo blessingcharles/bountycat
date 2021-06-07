@@ -7,10 +7,10 @@ headers = {'User-Agent' : 'Mozilla/5.0 (X11; Linux x86_64; rv:69.0) Gecko/201001
             'Accept-Encoding' : 'gzip, deflate',
             'Upgrade-Insecure-Requests' : '1'}
 
-def requester(url,GET=True,POST=False,time=2):
+def requester(url,GET=True,POST=False,time=10):
     try:
         if GET:
-            page = requests.get(url,headers=headers)
+            page = requests.get(url,headers=headers , timeout=time)
           #  print(page)
             return page
         if POST:
@@ -18,6 +18,7 @@ def requester(url,GET=True,POST=False,time=2):
             return page
     except:
         pass
+
 
 
         

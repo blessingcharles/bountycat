@@ -6,9 +6,12 @@ from concurrent.futures import ThreadPoolExecutor
 
 class FirstStrike :
 
-    def __init__(self,url):
+    def __init__(self,url,timeout=10,hide_code=[],verbose=False):
 
         self.url = url
+        self.timeout= timeout
+        self.hide_code = hide_code
+        self.verbose = verbose
 
     def hederParser(self,r):
 
@@ -29,7 +32,7 @@ class FirstStrike :
     def scrap(self,path_scrapped_wordlist):
 
         
-        r = requester(self.url)
+        r = requester(self.url,time=self.timeout)
 
         soup = soupObject(r.text)
 
@@ -75,12 +78,14 @@ class FirstStrike :
         for directory in directories:
             
             try:
-                print(f"trying  {req_url}/{directory}                                                          ",end="\r",flush=True)
+                if self.verbose :print(f"trying  {req_url}/{directory}                                                          ",end="\r",flush=True)
 
-                r = requester(f"{req_url}/{directory}")
-              
-                if r.status_code < 400 :
+                r = requester(f"{req_url}/{directory}",time=self.timeout)
+
+                if r.status_code in self.hide_code: pass
+                elif r.status_code < 400 :
                     print(f"{red}SENSITIVE FILES RESPONSE CODE[{r.status_code}]{reset}----->{yellow} {req_url}/{directory}{reset}")
+            
             except:
                 pass
          
