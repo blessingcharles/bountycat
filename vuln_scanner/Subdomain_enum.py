@@ -1,6 +1,10 @@
 from templates import requester
 import json
 
+
+# domain finders https://www.threatcrowd.org/searchApi/v2/domain/report/?domain=<domainname>
+# https://dns.bufferover.run/dns?q=<domain_name>
+
 class Sub_Enum:
 
     def __init__(self,domain,path):

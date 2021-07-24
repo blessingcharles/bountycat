@@ -1,6 +1,4 @@
 ##AVAILABLE IN th3h04x/bountycat in dockerhub
-
-
 FROM ubuntu
 
 WORKDIR /opt
